@@ -100,6 +100,7 @@ img { width: 100%; height: 100%; object-fit: cover; }
 .airdate { color: var(--muted); font-size: 0.875rem; }
 summary { cursor: pointer; width: fit-content; padding-block: 0.3rem; font-size: 0.875rem; }
 details p { color: #ccc; line-height: 1.7; }
+summary:hover { color: var(--accent); }
 @media (max-width: 600px) {
   .episode { grid-template-columns: 100px minmax(0, 1fr); gap: 0.8rem; }
   .episode-title { flex-direction: column; gap: 0.3rem; }

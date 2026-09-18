@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import type { Show } from '../types/show'
 import ShowCard from './ShowCard.vue'
 
-defineProps<{ genre: string; shows: Show[]; ranked?: boolean }>()
+defineProps<{ genre: string; shows: Show[]; ranked?: boolean; hideCount?: boolean }>()
 
 const row = ref<HTMLUListElement | null>(null)
 
@@ -22,7 +22,7 @@ function scrollRow(direction: number) {
 <template>
   <section :id="`genre-${genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`" class="genre-row" tabindex="-1" :aria-label="`${genre} shows`">
     <div class="row-heading">
-      <h3>{{ genre }} <span>{{ shows.length }}</span></h3>
+      <h3>{{ genre }} <span v-if="!hideCount">{{ shows.length }}</span></h3>
       <div class="row-controls">
         <button type="button" :aria-label="`Scroll ${genre} left`" @click="scrollRow(-1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>
         <button type="button" :aria-label="`Scroll ${genre} right`" @click="scrollRow(1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button>
@@ -111,6 +111,7 @@ h3 span {
 
 .row-controls button:hover {
   background: #404040;
+  color: var(--accent);
 }
 
 .show-list {

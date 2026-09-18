@@ -121,7 +121,8 @@ onBeforeUnmount(() => {
 .profile-dropdown { position: absolute; z-index: 6; right: 0; top: calc(100% + 0.75rem); width: 210px; padding: 0.5rem; border: 1px solid #444; border-radius: 10px; background: #242424; box-shadow: 0 16px 40px #0008; }
 .profile-name { margin: 0; padding: 0.7rem; border-bottom: 1px solid #ffffff1a; overflow-wrap: anywhere; font-weight: 600; }
 .logout-button { display: flex; align-items: center; gap: 0.7rem; width: 100%; min-height: 44px; margin-top: 0.4rem; padding: 0.7rem; border: 0; border-radius: 6px; background: transparent; color: #eee; text-align: left; }
-.logout-button:hover { background: #363636; }
+.logout-button:hover { background: #363636; color: var(--accent); }
+.switch-mode:hover, .close-account:hover { color: var(--accent); }
 .account-button { min-height: 44px; padding: 0.5rem 1rem; background: var(--accent); color: #171717; border: 0; border-radius: 5px; white-space: nowrap; font-weight: 700; }
 .account-dialog { position: fixed; width: min(440px, calc(100% - 2rem)); max-height: 90dvh; padding: 2rem; border: 1px solid #444; border-radius: 12px; background: #181818; color: #fff; }
 .account-dialog::backdrop { background: #000b; }

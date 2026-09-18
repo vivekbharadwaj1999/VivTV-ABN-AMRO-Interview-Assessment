@@ -148,6 +148,11 @@ h4 {
   transform: none;
 }
 
+.card-link:not(.touch-input):hover h4,
+.card-link:not(.touch-input):hover .preview-action {
+  color: var(--accent);
+}
+
   .card-link:not(.touch-input):hover .preview {
     opacity: 1;
     visibility: visible;

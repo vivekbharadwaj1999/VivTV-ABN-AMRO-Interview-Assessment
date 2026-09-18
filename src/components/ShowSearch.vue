@@ -65,10 +65,6 @@ watch(() => props.query, search, { immediate: true })
 <style scoped>
 /* Search matches use a wrapping grid rather than the catalogue's horizontal rows. */
 .search-section { padding-block: 2rem 1rem; scroll-margin-top: 1rem; }
-h2 { margin: 0 0 1rem; font-size: 1.5rem; }
-form { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; }
-.search-field { display: grid; gap: 0.4rem; flex: 1 1 260px; max-width: 600px; color: #b3b3b3; font-size: 0.875rem; }
-input { width: 100%; min-height: 46px; padding: 0.75rem 1rem; border: 1px solid #666; border-radius: 6px; background: #202020; color: #fff; font: inherit; }
 .search-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.25rem; padding: 0; list-style: none; }
 li { min-width: 0; }
 @media (max-width: 600px) { .search-results { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; } }

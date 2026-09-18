@@ -153,6 +153,7 @@ onBeforeUnmount(() => {
 
 .close-button:hover {
   background: #383838;
+  color: var(--accent);
 }
 
 @keyframes modal-appear {

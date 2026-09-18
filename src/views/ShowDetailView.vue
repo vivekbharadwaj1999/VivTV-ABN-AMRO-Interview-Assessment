@@ -142,7 +142,7 @@ onUnmounted(() => controller?.abort())
 }
 
 .back-link:hover {
-  color: #fff;
+  color: var(--accent);
 }
 
 .show-detail {
@@ -173,7 +173,7 @@ onUnmounted(() => controller?.abort())
 }
 
 .detail-tabs button:hover {
-  color: #fff;
+  color: var(--accent);
 }
 
 .detail-panel {

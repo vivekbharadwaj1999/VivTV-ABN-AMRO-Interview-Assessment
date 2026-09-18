@@ -50,7 +50,7 @@ onMounted(loadShows)
 <!-- Discovery rows remain mounted underneath the nested show modal. -->
 <template>
   <ShowSearch :query="searchTerm || ''" />
-  <section v-if="featuredShow && !error" class="featured" aria-labelledby="featured-title">
+  <section v-if="featuredShow && !error" class="featured" :class="{ 'has-poster': featuredShow.image && !featuredImageFailed }" aria-labelledby="featured-title">
     <img
       v-if="featuredShow.image && !featuredImageFailed"
       class="featured-backdrop"
@@ -89,8 +89,8 @@ onMounted(loadShows)
     </div>
     <p v-else-if="!genreGroups.length" class="status-panel" role="status">No shows to explore right now. Please check back later.</p>
     <template v-else>
-      <GenreRow v-if="recentShows.length" genre="Previously watched" :shows="recentShows" />
-      <GenreRow v-if="topPicks.length" genre="Top picks for you" :shows="topPicks" ranked />
+      <GenreRow v-if="recentShows.length" genre="Previously watched" :shows="recentShows" hide-count />
+      <GenreRow v-if="topPicks.length" genre="Top picks for you" :shows="topPicks" ranked hide-count />
       <GenreRow v-for="group in genreGroups" :key="group.genre" :genre="group.genre" :shows="group.shows" />
     </template>
   </section>
@@ -220,25 +220,6 @@ h1 {
   scroll-margin-top: 1rem;
 }
 
-.collection-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.5rem 1rem;
-  flex-wrap: wrap;
-}
-
-.collection-heading h2 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.collection-heading p, .collection-note {
-  margin: 0.4rem 0 0;
-  color: var(--muted);
-  font-size: 0.875rem;
-}
-
 .status-panel {
   margin: 2rem 0;
   padding: 2rem;
@@ -254,38 +235,70 @@ h1 {
 
 @media (max-width: 600px) {
   .featured {
-    grid-template-columns: minmax(0, 1fr) 110px;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.8rem;
     min-height: 280px;
     margin-top: 1rem;
     padding: 1.25rem;
   }
 
+  /* Keep the poster beside the heading, leaving the description the full row. */
+  .featured.has-poster {
+    grid-template-columns: minmax(0, 1fr) 110px;
+  }
+
+  .featured-copy {
+    display: contents;
+  }
+
   .featured-poster {
+    grid-column: 2;
+    grid-row: 2 / 5;
+    align-self: start;
     width: 110px;
     height: auto;
   }
 
   h1 {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0;
     font-size: clamp(1.8rem, 7.5vw, 2.7rem);
     overflow-wrap: anywhere;
   }
 
   .eyebrow {
+    grid-column: 1 / -1;
+    grid-row: 1;
     font-size: 0.75rem;
     letter-spacing: 0.04em;
   }
 
   .featured-description {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    margin: 1.2rem 0 0;
     display: block;
     font-size: 0.9375rem;
   }
 
   .featured-meta {
+    grid-column: 1;
+    grid-row: 3;
+    margin: 0;
     gap: 0.4rem 0.75rem;
   }
 
+  .featured-genres {
+    grid-column: 1;
+    grid-row: 4;
+    margin: 0;
+  }
+
   .browse-link {
+    grid-column: 1 / -1;
+    grid-row: 6;
+    justify-self: start;
     padding-inline: 0.9rem;
     gap: 0.7rem;
     font-size: 0.875rem;
