@@ -1,99 +1,73 @@
 # VivTV
 
-A responsive TV-show discovery app built with Vue 3, TypeScript and the TVMaze API. Browse shows by genre and rating, search by name, and explore episodes and cast without losing your place in the catalogue.
+A TV show browsing app built as part of the ABN AMRO frontend developer interview assessment. It uses Vue 3, TypeScript and the TVMaze API.
 
-## Run locally
+My previous frontend work has been in React, so this was also a chance to learn Vue. The design takes inspiration from streaming services, with a dark background and a yellow theme. You can browse genres, search for a show, and open its description, episodes and cast.
 
-Developed with **Node.js 24.11.1** and **npm 11.6.2**. Use Node 24 and npm 11; `.nvmrc` records the development Node version.
+## Running it
+
+I used **Node.js 24.11.1** and **npm 11.6.2**. The Node version is also in `.nvmrc`.
 
 ```sh
+git clone https://github.com/vivekbharadwaj1999/VivTV-ABN-AMRO-Interview-Assessment.git
+cd VivTV-ABN-AMRO-Interview-Assessment
 npm ci
 npm run dev
 ```
 
-Open the URL printed in the terminal. No API key or environment file is needed. An internet connection is required for TVMaze data and artwork.
+Open the local URL printed in the terminal. There is no API key or environment file to set up, but you need an internet connection to load the shows and images.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the development server |
-| `npm test` | Run unit and component tests |
-| `npm run test:watch` | Rerun tests while editing |
-| `npm run type-check` | Check TypeScript and Vue types |
-| `npm run build` | Check types and build into `dist/` |
-| `npm run preview` | Preview the production build locally |
+To try it on a phone on the same wireless network:
 
-To test on a phone connected to the same Wi-Fi, run `npm run dev -- --host 0.0.0.0` and open the Network URL shown in the terminal. Local accounts require HTTPS or localhost; browsing works over the local network's HTTP address.
-
-## Features
-
-- Horizontal genre rows, sorted by rating with unrated shows last.
-- Search by show name across TVMaze's catalogue, with loading, empty and retry states.
-- Shareable show URLs with an Overview, Episodes and Cast modal.
-- A featured banner randomly chosen from the loaded collection's ten highest-rated shows, avoiding the previous selection when possible.
-- Ranked top picks and the ten most recently opened shows, without duplicates.
-- Desktop card previews and smooth row navigation; swipeable rows and direct card taps on mobile.
-- Sticky navigation, a mobile search/genre pill and a layout that adapts to the on-screen keyboard.
-- Optional local account creation, login and logout.
-
-## Technical decisions
-
-**Vue 3** matches the assessment's preferred framework. Single-file components keep each component's template, behaviour and styling together. The app uses ordinary refs, computed values, props and events, without a global state library or component framework.
-
-**TypeScript** documents the API fields used by the app, including nullable ratings and images. **Vite** provides development and build tooling; the interface is built with custom CSS, native controls and native scrolling rather than a UI template or carousel plugin.
-
-**Vue Router** gives each show a URL at `/show/:id`. The detail modal is a nested route, so the catalogue and search results remain mounted underneath it. Closing the modal returns to browsing without resetting the rows. Direct links also work. A native HTML dialog handles focus containment and makes the background inert while details are open.
-
-API requests live in `api/tvmaze.ts`, while each view or content section owns its loading and error state. AbortController cancels obsolete requests. Optional artwork failures fall back to a poster. Small TypeScript helpers handle grouping, ranking, summaries and browsing history separately from presentation.
-
-## Source layout
-
-```text
-src/
-  App.vue          Shared navigation, search controls and footer
-  main.ts          Vue entry point
-  styles.css       Theme, shared styles and accessibility defaults
-  api/             TVMaze requests and response handling
-  router/          Dashboard and show-detail routes
-  views/           Dashboard and show-detail content
-  components/      Cards, rows, hero, modal, search, accounts and detail tabs
-  types/           API fields used by the interface
-  utils/           Grouping, summaries, discovery and local storage
+```sh
+npm run dev -- --host 0.0.0.0
 ```
 
-Tests sit beside the components and helpers they cover.
+Use the Network URL from the terminal on your phone. Browsing works over HTTP, but account creation and login need HTTPS or localhost because they use Web Crypto.
 
-## Data and scope
+## How it works
 
-The dashboard loads the first show-index page, containing up to 250 shows. Genre rows and top picks are ranked within this selection, not across all of TVMaze. Equal ratings are sorted by name. Shows can appear in more than one genre.
+The homepage groups shows into horizontal genre rows, with the highest rated first. Shows without a rating go at the end. The banner picks a show from the collection's top ten, and search uses TVMaze's search endpoint so it can find shows outside the homepage collection too.
 
-Search uses TVMaze's search endpoint rather than filtering the dashboard selection. Results retain the API's relevance order. Requests are cancelled when replaced, and stale responses cannot overwrite newer results.
+Clicking a card opens a details modal with Overview, Episodes and Cast tabs. It changes the URL to `/show/:id`, so you can share a show or open it directly. On mobile, the rows can be swiped and the search and genre controls sit in a floating pill at the bottom.
 
-Episodes include specials. The season selector is derived from the returned episodes, and summaries start collapsed to avoid spoilers. All episodes load once per detail visit; fetching per season would be a useful improvement for very long-running shows. Cast displays the main cast, not every episode's guest stars.
+There are a few extras: top picks, recently opened shows, and a small local signup/login flow. You don't need to log in to browse.
 
-TVMaze summaries are converted to plain text instead of rendered with `v-html`. The banner displays the first sentence. TVMaze's documented public API provides metadata and artwork, not trailers or video playback.
+## Some decisions behind the code
 
-“Previously watched” records shows whose details were opened, rather than actual playback. It stores the ten most recent unique shows in this browser, shared across local accounts. “Top picks for you” is a rating-based list, not personalised recommendations.
+- **Vue and state:** Vue is preferred in the assignment, and this app was a manageable way to learn it coming from React. Most state belongs to one part of the interface, such as the selected season or active detail tab, so it stays in that component. Props and events connect the header search to the results. The small amount of shared browsing history uses a shared ref, so a separate state management library didn't seem necessary here.
+- **Reusable cards and rows:** genre lists, top picks and recently opened shows all use `GenreRow` and `ShowCard`. They need the same scrolling, poster fallbacks and links to details. Optional props control the ranking badges and heading counts without duplicating the components.
+- **Grouping the API data:** TVMaze doesn't have a genre endpoint, so the homepage fetches a show index page and groups it locally. A show can appear in several genres. Each group is sorted by rating, with missing ratings last and equal ratings sorted by name. This logic lives in a helper so it can be tested without rendering the page.
+- **Details as a route and a modal:** opening a show should keep your place in the catalogue, but it should also have its own URL. A nested Vue Router route gives us both. The homepage stays mounted under the modal, and browser Back and Forward work with the selected show. A native dialog handles focus containment and makes the background inactive while it is open.
+- **Separate requests and error states:** the request URLs and HTTP checks are in `src/api/tvmaze.ts`. Episodes, cast and artwork have separate requests, so a failed cast request doesn't hide the show's overview. Each section can show its own retry or fallback. Search cancels the previous request and checks for cancellation before displaying results, so a slow earlier response cannot replace a newer search.
+- **TypeScript and missing data:** show images, ratings and several other API fields can be missing. The types make those cases visible while writing components. The UI still needs explicit fallbacks, such as “Not rated” or a poster placeholder; TypeScript doesn't validate the response at runtime.
+- **CSS and browser controls:** the assignment asks to keep plugins and templates to a minimum. Vite handles the development tooling, while the UI uses custom CSS. Horizontal overflow gives the rows touch scrolling, and the desktop arrows use `scrollBy`, so there is no carousel dependency. Mobile controls use media queries, and the search pill also follows the visual viewport so it can stay above the phone keyboard.
 
-## Local accounts
+The shared header and footer are in `App.vue`. The two views are in `src/views`, reusable UI pieces are in `src/components`, and helpers for grouping, summaries and local storage are in `src/utils`. Tests are kept next to the files they cover.
 
-Accounts demonstrate the registration and login interface; they are not an authentication boundary and do not protect content. Use a made-up username and a throwaway password.
+## A few things to know
 
-JSON records in localStorage contain usernames, random 16-byte salts and 256-bit PBKDF2-SHA-256 hashes with 210,000 iterations. Plaintext passwords are not stored. Web Crypto requires HTTPS or localhost. The active session is held in memory and ends on refresh or logout; account records remain until site storage is cleared.
+The homepage loads the **first page of TVMaze's show index**, up to 250 shows. So the top ten is the top ten within that collection, not the whole TVMaze catalogue. Search is not limited to that page.
 
-Browser storage can be inspected or changed. There is no email verification, password reset or cross-device synchronisation. Production authentication would need a backend or authentication provider with server-side verification and secure sessions.
+“Previously watched” means shows whose details you have opened. There is no actual video playback, and TVMaze's public API doesn't provide trailers. This history keeps the last ten unique shows in localStorage and is shared by accounts in the same browser. “Top picks for you” is based on ratings, not personal recommendations.
 
-## Accessibility and verification
+Episodes include specials, and cast shows the main cast. All episodes are fetched when you open a show's details; loading them per season would be an improvement for shows with a lot of episodes. Episode summaries are collapsed initially to avoid spoilers. API summaries are converted to plain text before being displayed.
 
-The interface includes a skip link, visible focus styles, labelled icon buttons, keyboard-operated detail tabs, native modal behaviour and loading/error feedback. Reduced-motion preferences disable animations. Touch users open cards directly without relying on hover.
+The account feature runs entirely in the frontend and is not production authentication. It saves usernames and salted password hashes in localStorage using PBKDF2-SHA-256. It does not save plaintext passwords, but browser storage can still be inspected or changed, so use a throwaway password. Accounts stay in that browser, while the login session ends on refresh. There is no password reset or access to the same account from another device. I decided to include this simple frontend authentication example to showcase a signup and login flow.
 
-Vitest, Vue Test Utils and jsdom cover grouping and rating order, fallbacks, loading and retry behaviour, search, navigation, detail tabs, discovery helpers and local accounts. API responses are mocked, so these tests do not verify TVMaze availability. Native dialog focus handling and virtual-keyboard behaviour also need real-browser checks.
+## Tests and build
 
-Desktop and phone checks were carried out during development. The final manual checks reported working mobile interactions and no console errors. Recheck these interactions after changing navigation or layout.
+```sh
+npm test
+npm run build
+```
 
-## Hosting
+Tests use Vitest, Vue Test Utils and jsdom. They cover rating order, genre grouping, search, show details, modal navigation, missing data, error/retry states and the local account helpers. The API is mocked in tests.
 
-Build with `npm run build` and serve `dist/`. Configure the host to return `index.html` for client-side routes such as `/show/1`, so direct links and refreshes work. Use HTTPS for local account functionality.
+`npm run build` runs the TypeScript check and creates the production files in `dist`. You can preview those with `npm run preview`. There is also `npm run test:watch` for working on tests and `npm run type-check` to check types separately.
 
-## Attribution
+The app has also been checked on desktop and a phone, including the mobile keyboard behaviour. Keyboard navigation, visible focus styles and reduced motion settings are supported. Browser checks are still needed alongside the tests, especially for the dialogs and mobile layout.
 
-Show data and artwork come from [TVMaze](https://www.tvmaze.com/). See the [API documentation](https://www.tvmaze.com/api) and its [CC BY-SA 4.0 licence](https://creativecommons.org/licenses/by-sa/4.0/). Artwork belongs to its respective owners.
+## Data source
+
+Show information and artwork come from [TVMaze](https://www.tvmaze.com/).
