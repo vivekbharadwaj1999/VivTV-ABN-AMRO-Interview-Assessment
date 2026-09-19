@@ -33,6 +33,10 @@ Clicking a card opens a details modal with Overview, Episodes and Cast tabs. It 
 
 There are a few extras: top picks, recently opened shows, and a small local signup/login flow. You don't need to log in to browse.
 
+I added “Find my next show” for those times when you keep browsing but can't decide what to watch. The button appears beside Previously watched once you've opened three different shows. On a phone, it's labelled “Next show” so it fits beside the heading.
+
+It looks at the genres in your last ten opened shows and suggests a show from the homepage collection, with a short explanation of why it matches. Genres you've explored more often carry more weight, and ratings decide between equally good matches. Anything still in your recent history is left out. “Try another” gives you the next suggestion without adding it to your history, while “More details” opens its normal details modal. As you explore different shows, the suggestions change too.
+
 ## Some decisions behind the code
 
 - **Vue and state:** Vue is preferred in the assignment, and this app was a manageable way to learn it coming from React. Most state belongs to one part of the interface, such as the selected season or active detail tab, so it stays in that component. Props and events connect the header search to the results. The small amount of shared browsing history uses a shared ref, so a separate state management library didn't seem necessary here.
@@ -43,7 +47,7 @@ There are a few extras: top picks, recently opened shows, and a small local sign
 - **TypeScript and missing data:** show images, ratings and several other API fields can be missing. The types make those cases visible while writing components. The UI still needs explicit fallbacks, such as “Not rated” or a poster placeholder; TypeScript doesn't validate the response at runtime.
 - **CSS and browser controls:** the assignment asks to keep plugins and templates to a minimum. Vite handles the development tooling, while the UI uses custom CSS. Horizontal overflow gives the rows touch scrolling, and the desktop arrows use `scrollBy`, so there is no carousel dependency. Mobile controls use media queries, and the search pill also follows the visual viewport so it can stay above the phone keyboard.
 
-The shared header and footer are in `App.vue`. The two views are in `src/views`, reusable UI pieces are in `src/components`, and helpers for grouping, summaries and local storage are in `src/utils`. Tests are kept next to the files they cover.
+The shared header and footer are in `App.vue`. The two views are in `src/views`, reusable UI pieces are in `src/components`, and helpers for grouping, summaries and local storage are in `src/utils`. Tests live separately in `tests/`, with matching `components`, `views` and `utils` folders.
 
 ## A few things to know
 
@@ -62,7 +66,7 @@ npm test
 npm run build
 ```
 
-Tests use Vitest, Vue Test Utils and jsdom. They cover rating order, genre grouping, search, show details, modal navigation, missing data, error/retry states and the local account helpers. The API is mocked in tests.
+Tests use Vitest, Vue Test Utils and jsdom. They cover rating order, genre grouping, recommendations, search, show details, modal navigation, missing data, error/retry states and the local account helpers. The API is mocked in tests.
 
 `npm run build` runs the TypeScript check and creates the production files in `dist`. You can preview those with `npm run preview`. There is also `npm run test:watch` for working on tests and `npm run type-check` to check types separately.
 

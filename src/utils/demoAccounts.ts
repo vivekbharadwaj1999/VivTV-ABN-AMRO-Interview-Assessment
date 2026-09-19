@@ -2,14 +2,16 @@
 type Account = { username: string; salt: string; hash: string }
 const storageKey = 'tv-explorer-demo-accounts-v1'
 
-// HTTP on a phone's LAN address does not expose the Web Crypto API.
+// Password hashing needs Web Crypto, which is unavailable on an ordinary HTTP LAN URL.
+// Stop before touching account storage and provide a readable message instead of a runtime error.
 function requirePasswordCrypto() {
   if (!globalThis.crypto?.subtle) {
     throw new Error('Log in and sign up require a secure connection. Open VivTV using HTTPS, or use localhost on your computer. You can still browse shows here.')
   }
 }
 
-// Reject malformed records instead of overwriting accounts that cannot be read.
+// Parse the account list and check username types plus salt/hash lengths in hex.
+// Corrupt records raise an error rather than silently replacing existing accounts with an empty list.
 function readAccounts(): Account[] {
   const raw = localStorage.getItem(storageKey)
   if (!raw) return []
@@ -21,12 +23,14 @@ function readAccounts(): Account[] {
   return data
 }
 
-// Store binary salts and hashes as ordinary JSON strings.
+// Represent each byte with two hexadecimal characters, including a leading zero when
+// needed. This makes the binary salt and hash safe to store as ordinary JSON strings.
 function toHex(bytes: Uint8Array) {
   return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
 }
 
-// Derive a salted hash with the browser API; the password itself is never persisted.
+// Encode the password as key material, decode the saved salt and derive a 256-bit hash.
+// Repeated PBKDF2 work slows guessing; the random salt makes identical passwords hash differently.
 async function hashPassword(password: string, salt: string) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits'])
   const bytes = Uint8Array.from(salt.match(/../g)!, part => parseInt(part, 16))
@@ -34,7 +38,8 @@ async function hashPassword(password: string, salt: string) {
   return toHex(new Uint8Array(bits))
 }
 
-// Normalize usernames and save only the salt and derived hash.
+// Normalise and validate input, create a random salt and derive the password hash.
+// Reject duplicate usernames before saving the new record, then return the name for the UI session.
 export async function createDemoAccount(username: string, password: string) {
   requirePasswordCrypto()
   const name = username.trim().toLowerCase()
@@ -48,7 +53,8 @@ export async function createDemoAccount(username: string, password: string) {
   return name
 }
 
-// Compare a newly derived hash with the stored record for this username.
+// Find the normalised username and hash the supplied password with that account's salt.
+// Matching hashes return the username; missing accounts and wrong passwords share one error.
 export async function signInDemoAccount(username: string, password: string) {
   requirePasswordCrypto()
   const account = readAccounts().find(a => a.username === username.trim().toLowerCase())

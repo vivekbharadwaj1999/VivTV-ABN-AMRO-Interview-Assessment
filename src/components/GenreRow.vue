@@ -7,7 +7,8 @@ defineProps<{ genre: string; shows: Show[]; ranked?: boolean; hideCount?: boolea
 
 const row = ref<HTMLUListElement | null>(null)
 
-// Move most of a row at a time so the next cards still have some visual context.
+// Move 85% of the visible row in the chosen direction, leaving some overlap for context.
+// The browser clamps scrolling at either end; reduced motion skips the smooth animation.
 function scrollRow(direction: number) {
   if (!row.value) return
 
@@ -18,11 +19,14 @@ function scrollRow(direction: number) {
 }
 </script>
 
-<!-- Native horizontal scrolling supports swipes without a carousel dependency. -->
+<!-- Genres, history and top picks share the same row. Props control heading counts
+     and rank badges without changing the cards or their navigation. -->
 <template>
   <section :id="`genre-${genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`" class="genre-row" tabindex="-1" :aria-label="`${genre} shows`">
     <div class="row-heading">
       <h3>{{ genre }} <span v-if="!hideCount">{{ shows.length }}</span></h3>
+      <!-- Optional row actions stay visible on mobile even when the scroll arrows hide. -->
+      <div v-if="$slots.actions" class="row-actions"><slot name="actions" /></div>
       <div class="row-controls">
         <button type="button" :aria-label="`Scroll ${genre} left`" @click="scrollRow(-1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>
         <button type="button" :aria-label="`Scroll ${genre} right`" @click="scrollRow(1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button>
@@ -40,6 +44,8 @@ function scrollRow(direction: number) {
 <style scoped>
 /* Native horizontal scrolling supports both swipe gestures and the desktop arrows. */
 .show-list.ranked {
+  /* Badges extend past the card corners, so reserve space inside the scroll area
+     to prevent them being clipped at the top and left edges. */
   padding: 1.5rem 1.5rem 0.8rem;
   gap: 2rem;
   scroll-padding-inline: 1.5rem;
@@ -72,11 +78,14 @@ function scrollRow(direction: number) {
 
 .row-heading {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.65rem;
 }
+
+.row-actions { margin-left: auto; }
 
 h3 {
   margin: 0;
@@ -115,6 +124,8 @@ h3 span {
 }
 
 .show-list {
+  /* Keep adding columns instead of wrapping. Native overflow handles swipes, and
+     proximity snapping gently aligns cards after scrolling without forcing every stop. */
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: clamp(160px, 14vw, 220px);
@@ -147,6 +158,9 @@ li {
 
 @media (max-width: 700px) {
   .row-controls { display: none; }
+  .row-heading:has(.row-actions) { flex-wrap: nowrap; gap: 0.5rem; }
+  .row-heading:has(.row-actions) h3 { font-size: 1.125rem; }
+  .row-actions { flex: 0 0 auto; margin-left: auto; }
 }
 
 @media (orientation: landscape) and (max-height: 550px) {

@@ -1,7 +1,7 @@
 import { mount, RouterLinkStub } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import ShowCard from './ShowCard.vue'
-import type { Show } from '../types/show'
+import ShowCard from '../../src/components/ShowCard.vue'
+import type { Show } from '../../src/types/show'
 
 const show: Show = {
   id: 1, name: 'Example', genres: ['Drama'],

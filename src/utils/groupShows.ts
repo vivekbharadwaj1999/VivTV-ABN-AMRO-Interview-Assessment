@@ -1,6 +1,7 @@
 import type { Show } from '../types/show'
 
-// A show can belong to several rows; each row is sorted independently.
+// Build a new array for each genre, adding shows to every genre they belong to.
+// Sorting these arrays leaves the original catalogue order unchanged.
 export function groupShowsByGenre(shows: Show[]) {
   const groups = new Map<string, Show[]>()
 
@@ -13,6 +14,8 @@ export function groupShowsByGenre(shows: Show[]) {
   }
 
   return Array.from(groups, ([genre, shows]) => ({
+    // Sort each row by rating, then name for equal ratings. Finally sort the rows
+    // themselves alphabetically so the menu and catalogue use a predictable order.
     genre,
     shows: shows.sort((a, b) => {
       // Unrated shows follow rated shows, including a valid rating of zero.

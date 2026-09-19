@@ -4,6 +4,7 @@ import { RouterLink, RouterView } from 'vue-router'
 import { getShows } from '../api/tvmaze'
 import GenreRow from '../components/GenreRow.vue'
 import ShowSearch from '../components/ShowSearch.vue'
+import ShowRecommendation from '../components/ShowRecommendation.vue'
 import type { Show } from '../types/show'
 import { groupShowsByGenre } from '../utils/groupShows'
 import { pickFeatured, topRated } from '../utils/discovery'
@@ -16,13 +17,16 @@ const emit = defineEmits<{ 'genres-loaded': [genres: string[]] }>()
 const isLoading = ref(true)
 const error = ref('')
 const featuredImageFailed = ref(false)
+// Groups and rankings follow the catalogue automatically. Store the random banner
+// separately so unrelated page updates do not select a different show.
 const genreGroups = computed(() => groupShowsByGenre(shows.value))
 
 const topPicks = computed(() => topRated(shows.value))
 const featuredShow = ref<Show | null>(null)
 const featuredDescription = computed(() => firstSummarySentence(featuredShow.value?.summary))
 
-// Choose the banner once per catalogue load, not on every reactive update.
+// Fetch the catalogue, choose its banner and report genre names to the header.
+// Retry follows the same path, clearing the previous error and image fallback first.
 async function loadShows() {
   isLoading.value = true
   error.value = ''
@@ -30,6 +34,8 @@ async function loadShows() {
 
   try {
     shows.value = await getShows()
+    // Avoid the last banner when another top pick exists. Storage errors are handled
+    // separately so blocked localStorage does not prevent browsing shows.
     let previousId: number | null = null
     try { previousId = Number(localStorage.getItem('tv-explorer-last-featured')) } catch { /* Storage is optional. */ }
     featuredShow.value = pickFeatured(topPicks.value, previousId)
@@ -50,6 +56,8 @@ onMounted(loadShows)
 <!-- Discovery rows remain mounted underneath the nested show modal. -->
 <template>
   <ShowSearch :query="searchTerm || ''" />
+  <!-- The banner uses the same detail route as a card. Decorative artwork is hidden
+       from screen readers, while the foreground poster has a descriptive label. -->
   <section v-if="featuredShow && !error" class="featured" :class="{ 'has-poster': featuredShow.image && !featuredImageFailed }" aria-labelledby="featured-title">
     <img
       v-if="featuredShow.image && !featuredImageFailed"
@@ -82,6 +90,8 @@ onMounted(loadShows)
   </section>
 
   <section id="genres" class="collection" aria-label="Show collections" :aria-busy="isLoading">
+    <!-- Loading, error and empty states replace the rows. Recent history is shown only
+         once a show has been opened, and only top picks receive ranking badges. -->
     <p v-if="isLoading" class="status-panel" role="status">Loading your next watch…</p>
     <div v-else-if="error" class="status-panel" role="alert">
       <p>{{ error }}</p>
@@ -89,16 +99,20 @@ onMounted(loadShows)
     </div>
     <p v-else-if="!genreGroups.length" class="status-panel" role="status">No shows to explore right now. Please check back later.</p>
     <template v-else>
-      <GenreRow v-if="recentShows.length" genre="Previously watched" :shows="recentShows" hide-count />
+      <GenreRow v-if="recentShows.length" genre="Previously watched" :shows="recentShows" hide-count>
+        <template v-if="recentShows.length >= 3" #actions><ShowRecommendation :shows="shows" :history="recentShows" /></template>
+      </GenreRow>
       <GenreRow v-if="topPicks.length" genre="Top picks for you" :shows="topPicks" ranked hide-count />
       <GenreRow v-for="group in genreGroups" :key="group.genre" :genre="group.genre" :shows="group.shows" />
     </template>
   </section>
+  <!-- Details occupy the child route while this catalogue stays mounted underneath. -->
   <RouterView />
 </template>
 
 <style scoped>
-/* Component layout and responsive states. */
+/* Isolate the banner so its negative z-index artwork and gradient stay behind the
+   text without falling behind the page. The desktop poster gets its own column. */
 .featured {
   position: relative;
   isolation: isolate;
@@ -248,6 +262,8 @@ h1 {
   }
 
   .featured-copy {
+    /* Remove the wrapper's box so its children use the outer grid. This allows the
+       description to span both columns without duplicating mobile markup. */
     display: contents;
   }
 
@@ -277,6 +293,7 @@ h1 {
   .featured-description {
     grid-column: 1 / -1;
     grid-row: 5;
+    /* Together with the 0.8rem grid gap, this gives 2rem above the description. */
     margin: 1.2rem 0 0;
     display: block;
     font-size: 0.9375rem;

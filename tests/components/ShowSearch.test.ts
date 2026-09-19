@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, expect, it, vi } from 'vitest'
-import ShowSearch from './ShowSearch.vue'
+import ShowSearch from '../../src/components/ShowSearch.vue'
 
 afterEach(() => vi.unstubAllGlobals())
 const options = { props: { query: '' }, global: { stubs: { ShowCard: { props: ['show'], template: '<p>{{ show.name }}</p>' } } } }

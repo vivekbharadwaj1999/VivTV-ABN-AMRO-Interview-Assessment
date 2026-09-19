@@ -11,10 +11,13 @@ const isLoading = ref(true)
 const error = ref('')
 const failedImages = ref<number[]>([])
 const controller = new AbortController()
+// Both the selector and visible list derive from the fetched episodes. Changing the
+// season filters locally rather than making another request.
 const seasons = computed(() => [...new Set(episodes.value.map(episode => episode.season))].sort((a, b) => a - b))
 const visibleEpisodes = computed(() => episodes.value.filter(episode => episode.season === selectedSeason.value))
 
-// Load once per show, then switch seasons locally without another request.
+// Fetch all episodes, including specials, and select the first available season.
+// Errors and retry stay in this section so the overview and cast remain usable.
 async function loadEpisodes() {
   isLoading.value = true
   error.value = ''
@@ -49,6 +52,8 @@ onUnmounted(() => controller.abort())
         </select>
       </label>
     </div>
+    <!-- Missing episode numbers are labelled as specials. Native details keeps each
+         synopsis collapsed until requested, so browsing the list does not reveal spoilers. -->
     <ol class="episode-list">
       <li v-for="episode in visibleEpisodes" :key="episode.id" class="episode">
         <div class="episode-image">

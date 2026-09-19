@@ -10,7 +10,8 @@ const error = ref('')
 const failedImages = ref<number[]>([])
 const controller = new AbortController()
 
-// Cast has its own retry state so a failed request does not hide the rest of the show.
+// Fetch main cast independently of the overview. Failure gives this section its own
+// retry action, while cancellation on unmount is ignored instead of shown as an error.
 async function loadCast() {
   isLoading.value = true
   error.value = ''
@@ -37,6 +38,8 @@ onUnmounted(() => controller.abort())
   <p v-else-if="!cast.length">No cast information is available yet.</p>
   <div v-else>
     <h2>Main cast</h2>
+    <!-- Actor and character IDs distinguish multiple roles played by one person.
+         Failed photos are tracked by actor ID so their other entries share the fallback. -->
     <ul class="cast-grid">
       <li v-for="member in cast" :key="`${member.person.id}-${member.character.id}`">
         <div class="cast-photo">

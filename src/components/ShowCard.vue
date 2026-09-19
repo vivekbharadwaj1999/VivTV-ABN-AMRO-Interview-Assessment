@@ -5,6 +5,8 @@ import type { Show } from '../types/show'
 import { summaryToText } from '../utils/summary'
 
 const props = defineProps<{ show: Show }>()
+// An image URL may exist but fail to load, so track that separately from missing data.
+// Pointer type disables hover previews on touch while preserving direct link navigation.
 const imageFailed = ref(false)
 const touchInput = ref(false)
 const summary = computed(() => summaryToText(props.show.summary))
@@ -28,6 +30,8 @@ const summary = computed(() => summaryToText(props.show.summary))
         <span class="rating" :aria-label="show.rating.average === null ? 'Not rated' : 'Rating: ' + show.rating.average + ' out of 10'">
           <span aria-hidden="true">★</span> {{ show.rating.average?.toFixed(1) ?? 'N/A' }}
         </span>
+        <!-- This is visual context, not another control. Hide it from screen readers
+             to avoid duplicating the card link, and let clicks pass through to that link. -->
         <div class="preview" aria-hidden="true">
           <p class="preview-genres">{{ show.genres.join(' · ') }}</p>
           <p class="preview-summary">{{ summary || 'Discover more about this show.' }}</p>
@@ -93,6 +97,8 @@ img {
 }
 
 .preview {
+  /* Animate inside the poster without changing card dimensions or moving neighbours.
+     Ignoring pointer events keeps the entire overlay part of the same clickable card. */
   position: absolute;
   inset: 0;
   display: flex;
@@ -143,6 +149,7 @@ h4 {
 }
 
 .card-link:focus-visible .preview {
+  /* Keyboard focus reveals the same preview as mouse hover. */
   opacity: 1;
   visibility: visible;
   transform: none;

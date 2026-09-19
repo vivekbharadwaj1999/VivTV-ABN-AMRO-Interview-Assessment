@@ -8,6 +8,8 @@ const backdrop = ref('')
 const posterFailed = ref(false)
 const controller = new AbortController()
 
+// Prefer background artwork, then a banner. If neither exists or the request fails,
+// leave backdrop empty so the template continues using the show's portrait poster.
 onMounted(async () => {
   try {
     const images = await getShowImages(props.show.id, controller.signal)
@@ -21,7 +23,8 @@ onMounted(async () => {
 onUnmounted(() => controller.abort())
 </script>
 
-<!-- Prefer landscape artwork, with a poster fallback when none is available. -->
+<!-- Clearing a failed backdrop switches back to the poster branch. A failed poster
+     has its own placeholder, so show information remains visible without either image. -->
 <template>
   <header class="show-hero" :class="{ 'has-backdrop': backdrop }">
     <img v-if="backdrop" class="backdrop" :src="backdrop" alt="" @error="backdrop = ''" />
@@ -46,7 +49,8 @@ onUnmounted(() => controller.abort())
 </template>
 
 <style scoped>
-/* Layer a readable gradient over artwork, falling back to a portrait poster. */
+/* Keep artwork behind text in a local stacking context. The bottom gradient blends
+   into the detail panel while the side gradient improves contrast behind the title. */
 .show-hero { position: relative; isolation: isolate; display: flex; align-items: end; min-height: 390px; overflow: hidden; border-radius: 10px 10px 0 0; background: #202020; }
 .show-hero::after { position: absolute; inset: 0; z-index: -1; content: ''; background: linear-gradient(0deg, #141414 0%, #1414148c 65%, #14141420), linear-gradient(90deg, #141414b3, transparent); }
 .backdrop { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }

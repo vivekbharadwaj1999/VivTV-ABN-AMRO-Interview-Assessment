@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, expect, it, vi } from 'vitest'
-import ShowHero from './ShowHero.vue'
+import ShowHero from '../../src/components/ShowHero.vue'
 
 const show = { id: 1, name: 'Example', genres: [], premiered: null, rating: { average: null }, image: null }
 afterEach(() => vi.unstubAllGlobals())

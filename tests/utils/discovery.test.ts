@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { addRecent, pickFeatured, topRated } from './discovery'
-import type { Show } from '../types/show'
+import { addRecent, pickFeatured, topRated } from '../../src/utils/discovery'
+import type { Show } from '../../src/types/show'
 
 const show = (id: number, rating: number | null = id): Show => ({
   id, name: `Show ${id}`, rating: { average: rating }, genres: [], image: null, premiered: null,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { firstSummarySentence, summaryToText } from './summary'
+import { firstSummarySentence, summaryToText } from '../../src/utils/summary'
 
 it('extracts the first sentence from formatted summaries without cutting at decimal points', () => {
   expect(firstSummarySentence('<p>A <b>crew</b> travels 3.5 light years. Their adventure begins.</p>'))

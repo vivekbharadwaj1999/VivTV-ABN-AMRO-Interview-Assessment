@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { Show } from '../types/show'
-import { groupShowsByGenre } from './groupShows'
+import type { Show } from '../../src/types/show'
+import { groupShowsByGenre } from '../../src/utils/groupShows'
 
 const show: Show = {
   id: 1, name: 'Example', genres: ['Drama', 'Comedy'],

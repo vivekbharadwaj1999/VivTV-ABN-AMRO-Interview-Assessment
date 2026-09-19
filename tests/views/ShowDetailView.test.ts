@@ -1,8 +1,8 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import ShowCard from '../components/ShowCard.vue'
-import ShowDetailView from './ShowDetailView.vue'
+import ShowCard from '../../src/components/ShowCard.vue'
+import ShowDetailView from '../../src/views/ShowDetailView.vue'
 
 const show = {
   id: 1, name: 'Example', genres: ['Drama'], premiered: null,

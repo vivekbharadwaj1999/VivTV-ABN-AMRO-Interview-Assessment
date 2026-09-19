@@ -1,7 +1,8 @@
 import type { Show } from '../types/show'
 import type { CastMember, Episode, ShowImage } from '../types/showDetails'
 
-// Search the full catalogue and preserve the API's relevance order.
+// Encode the submitted name so spaces and symbols are safe in the URL. TVMaze wraps
+// each match with a score, so return just its show while keeping the relevance order.
 export async function searchShows(query: string, signal?: AbortSignal): Promise<Show[]> {
   const response = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query.trim())}`, { signal })
   if (!response.ok) throw new Error('Unable to search shows')
@@ -9,18 +10,21 @@ export async function searchShows(query: string, signal?: AbortSignal): Promise<
   return results.map(result => result.show)
 }
 
-// Keep the dashboard request bounded; search can find shows outside this first page.
+// Load one index page and let the dashboard group it locally by genre. This bounds the
+// initial request; search can still find shows outside this collection.
 export async function getShows(): Promise<Show[]> {
   const response = await fetch('https://api.tvmaze.com/shows?page=0')
 
   if (!response.ok) {
+    // fetch rejects network errors but not HTTP failures, so check the status explicitly.
     throw new Error(`Unable to load shows (${response.status})`)
   }
 
   return response.json()
 }
 
-// A missing show is a normal empty state, while other HTTP errors can be retried.
+// Return null for a missing show so the view can render its not-found state.
+// Throw for other HTTP failures so the same view can offer a retry instead.
 export async function getShow(id: string, signal?: AbortSignal): Promise<Show | null> {
   const response = await fetch(`https://api.tvmaze.com/shows/${encodeURIComponent(id)}`, { signal })
 
@@ -30,21 +34,24 @@ export async function getShow(id: string, signal?: AbortSignal): Promise<Show | 
   return response.json()
 }
 
-// Include specials so the episode list does not silently omit them.
+// Include specials in the single episode response. The component derives seasons and
+// filters this list locally rather than requesting another list for each selection.
 export async function getEpisodes(id: number, signal?: AbortSignal): Promise<Episode[]> {
   const response = await fetch(`https://api.tvmaze.com/shows/${id}/episodes?specials=1`, { signal })
   if (!response.ok) throw new Error('Unable to load episodes')
   return response.json()
 }
 
-// Retrieve the show's main cast rather than individual episode guest appearances.
+// Retrieve main cast entries containing both an actor and their character.
+// This does not include separate guest credits from individual episodes.
 export async function getCast(id: number, signal?: AbortSignal): Promise<CastMember[]> {
   const response = await fetch(`https://api.tvmaze.com/shows/${id}/cast`, { signal })
   if (!response.ok) throw new Error('Unable to load cast')
   return response.json()
 }
 
-// Artwork is fetched separately so it can fail without blocking show information.
+// Fetch optional artwork separately from the show's required information.
+// The hero decides which image to use and falls back to the poster if this request fails.
 export async function getShowImages(id: number, signal?: AbortSignal): Promise<ShowImage[]> {
   const response = await fetch(`https://api.tvmaze.com/shows/${id}/images`, { signal })
   if (!response.ok) throw new Error('Unable to load artwork')

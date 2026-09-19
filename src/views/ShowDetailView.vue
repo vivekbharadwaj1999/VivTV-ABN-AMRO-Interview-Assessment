@@ -16,7 +16,8 @@ const error = ref('')
 const tabs = ['Overview', 'Episodes', 'Cast'] as const
 const activeTab = ref<(typeof tabs)[number]>('Overview')
 
-// Follow the usual tab-list keyboard controls while keeping only one tab in the tab order.
+// Left and Right wrap through the tabs; Home and End jump to either end.
+// Change selection and focus together, leaving only the active tab in the normal tab order.
 function handleTabKey(event: KeyboardEvent, index: number) {
   let next = index
   if (event.key === 'ArrowRight') next = (index + 1) % tabs.length
@@ -33,7 +34,8 @@ function handleTabKey(event: KeyboardEvent, index: number) {
 const summary = computed(() => summaryToText(show.value?.summary))
 let controller: AbortController | undefined
 
-// Cancel the previous route's request before fetching the next show's details.
+// Clear the previous show before loading another ID. Each request checks its own
+// cancellation state so a late response cannot update the newly selected show's screen.
 async function loadShow() {
   controller?.abort()
   const request = new AbortController()
@@ -44,6 +46,8 @@ async function loadShow() {
   activeTab.value = 'Overview'
 
   try {
+    // Invalid IDs and API 404s leave show as null for the not-found branch.
+    // Only a successful result is added to browsing history.
     if (!/^[1-9]\d*$/.test(props.id)) return
     const result = await getShow(props.id, request.signal)
     if (!request.signal.aborted) {
@@ -57,7 +61,8 @@ async function loadShow() {
   }
 }
 
-// Vue reuses this page when only the route ID changes.
+// Load immediately and handle ID changes when this component is reused. The modal
+// also keys it by ID, so a different show there creates a fresh instance instead.
 watch(() => props.id, loadShow, { immediate: true })
 onUnmounted(() => controller?.abort())
 </script>
@@ -78,6 +83,8 @@ onUnmounted(() => controller?.abort())
     </section>
     <article v-else class="show-detail">
       <ShowHero :key="show.id" :show="show" />
+      <!-- v-show keeps all panels mounted, preserving their state between tab changes.
+           Episodes and cast therefore start loading when the show opens, not on the first tab click. -->
       <div class="detail-tabs" role="tablist" aria-label="Show information">
         <button
           v-for="(tab, index) in tabs"
@@ -116,7 +123,8 @@ onUnmounted(() => controller?.abort())
 </template>
 
 <style scoped>
-/* Component layout and responsive states. */
+/* In the modal, the hero reaches the panel edges while tabs and body content receive
+   their own gutters. Standalone rendering keeps the page padding and back link. */
 .detail-page {
   padding-block: 1.25rem 2rem;
 }

@@ -1,6 +1,6 @@
 import { webcrypto } from 'node:crypto'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { createDemoAccount, signInDemoAccount } from './demoAccounts'
+import { createDemoAccount, signInDemoAccount } from '../../src/utils/demoAccounts'
 
 beforeEach(() => { localStorage.clear(); vi.stubGlobal('crypto', webcrypto) })
 afterEach(() => { localStorage.clear(); vi.unstubAllGlobals() })

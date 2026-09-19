@@ -1,17 +1,20 @@
 import type { Show } from '../types/show'
 
-// Rank a copy so the dashboard's original show order is left untouched.
+// Copy and filter before sorting so the original catalogue stays untouched.
+// Exclude unrated shows, break rating ties by name and keep at most ten.
 export function topRated(shows: Show[]) {
   return [...shows].filter(show => show.rating.average !== null)
     .sort((a, b) => b.rating.average! - a.rating.average! || a.name.localeCompare(b.name)).slice(0, 10)
 }
 
-// Reopening a show moves it to the front without creating a duplicate.
+// Remove any older entry with this ID before prepending the latest show data.
+// Trimming to ten keeps the most recent unique shows, newest first.
 export function addRecent(shows: Show[], show: Show) {
   return [show, ...shows.filter(item => item.id !== show.id)].slice(0, 10)
 }
 
-// Avoid repeating the last banner when another top-rated show is available.
+// Exclude the previous banner when alternatives exist, then choose a random index.
+// A single available show may repeat; an empty collection returns null.
 export function pickFeatured(shows: Show[], previousId: number | null) {
   const alternatives = shows.filter(show => show.id !== previousId)
   const choices = alternatives.length ? alternatives : shows

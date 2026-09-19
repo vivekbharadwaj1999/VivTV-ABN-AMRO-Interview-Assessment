@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import appRouter from '../router'
+import appRouter from '../../src/router'
 
 const show = { id: 1, name: 'Example', genres: ['Drama'], premiered: null, rating: { average: 8 }, image: null }
 

@@ -8,9 +8,11 @@ const header = ref<HTMLElement | null>(null)
 let headerObserver: ResizeObserver | undefined
 let viewport: VisualViewport | null = null
 
-// Keep the mobile search pill above the keyboard, even when the browser pans the page.
+// Calculate the space below the visible viewport and pass it to CSS. The mobile pill
+// adds this offset to its bottom spacing when the keyboard covers part of the screen.
 function updateVisibleBottom() {
-  // Keyboard opening can shrink AND pan the visible viewport after scrolling.
+  // offsetTop accounts for the browser panning after focus. Ignore pinch zoom so
+  // zooming the page is not treated as extra keyboard space.
   const covered = viewport && viewport.scale === 1
     ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
     : 0
@@ -22,6 +24,8 @@ function backToTop() {
   window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
   header.value?.querySelector<HTMLAnchorElement>('.brand')?.focus({ preventScroll: true })
 }
+// Typing changes searchQuery; submit copies it into searchTerm for the results.
+// Keeping them separate avoids an API request on every keystroke.
 const searchQuery = ref('')
 const searchTerm = ref('')
 const searchInput = ref<HTMLInputElement | null>(null)
@@ -32,14 +36,16 @@ const genreMenu = ref<HTMLDetailsElement | null>(null)
 function closeGenres(event: MouseEvent) {
   if (genreMenu.value && !genreMenu.value.contains(event.target as Node)) genreMenu.value.open = false
 }
-// Close the menu before scrolling, leaving the selected row ready for keyboard navigation.
+// Build the same section ID as GenreRow, then scroll to and focus that row.
+// preventScroll avoids a second jump when focus follows the animated scroll.
 function chooseGenre(genre: string) {
   if (genreMenu.value) genreMenu.value.open = false
   const row = document.getElementById(`genre-${genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`)
   row?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' })
   row?.focus({ preventScroll: true })
 }
-// Wait for the input to become visible before focusing it.
+// Wait for Vue to apply the expanded state before focusing the input. Closing clears
+// both the draft and submitted query, then restores focus to the search control.
 async function toggleSearch() {
   if (genreMenu.value) genreMenu.value.open = false
   searchOpen.value = !searchOpen.value
@@ -52,7 +58,8 @@ async function toggleSearch() {
     searchButton.value?.focus()
   }
 }
-// Dismiss the phone keyboard before bringing the results into view.
+// Commit the query and blur to dismiss the phone keyboard. Wait for the results section
+// to render before scrolling to it; the API request can still be loading at that point.
 async function submitSearch() {
   searchTerm.value = searchQuery.value.trim()
   searchInput.value?.blur()
@@ -66,12 +73,15 @@ onMounted(() => {
   window.addEventListener('resize', updateVisibleBottom)
   updateVisibleBottom()
   document.addEventListener('click', closeGenres)
-  // The header can wrap on phones, so anchor links need its actual height.
+  // Header height can change with the layout. Scroll padding uses its measured height
+  // so genre anchors are not hidden underneath the sticky header.
   headerObserver = new ResizeObserver(() => {
     document.documentElement.style.setProperty('--header-height', `${header.value?.offsetHeight ?? 76}px`)
   })
   if (header.value) headerObserver.observe(header.value)
 })
+// Remove browser callbacks and CSS offsets if the shell is destroyed, rather than
+// leaving listeners that still reference its old elements.
 onBeforeUnmount(() => {
   viewport?.removeEventListener('resize', updateVisibleBottom)
   viewport?.removeEventListener('scroll', updateVisibleBottom)
@@ -115,6 +125,8 @@ onBeforeUnmount(() => {
     </div>
   </header>
   <main id="main-content" class="page" tabindex="-1">
+    <!-- Render the route with the submitted query and listen for its genre list.
+         HomeView sends names upward so the header does not fetch the catalogue again. -->
     <RouterView v-slot="{ Component }">
       <component :is="Component" :search-term="searchTerm" @genres-loaded="genres = $event" />
     </RouterView>

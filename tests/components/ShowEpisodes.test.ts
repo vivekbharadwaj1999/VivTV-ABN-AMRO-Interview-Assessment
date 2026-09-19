@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, expect, it, vi } from 'vitest'
-import ShowEpisodes from './ShowEpisodes.vue'
+import ShowEpisodes from '../../src/components/ShowEpisodes.vue'
 
 afterEach(() => vi.unstubAllGlobals())
 

@@ -1,11 +1,13 @@
-// Use sentence boundaries so decimal points do not cut the banner description short.
+// Convert markup to text first, then take the first English sentence segment.
+// Sentence boundaries handle decimal points better than splitting on every full stop.
 export function firstSummarySentence(summary?: string | null): string {
   const text = summaryToText(summary)
   const sentences = new Intl.Segmenter('en', { granularity: 'sentence' }).segment(text)
   return sentences[Symbol.iterator]().next().value?.segment.trim() ?? ''
 }
 
-// Convert API markup to plain text before displaying it in cards or descriptions.
+// Parse the API markup in a separate document, remove unwanted content and extract text.
+// Adding spaces at paragraph and break boundaries avoids joining words when tags disappear.
 export function summaryToText(summary?: string | null): string {
   if (!summary) return ''
 

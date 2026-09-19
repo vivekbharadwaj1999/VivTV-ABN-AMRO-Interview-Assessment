@@ -10,13 +10,15 @@ let previousOverflow = ''
 let opener: HTMLElement | null = null
 let closing = false
 
-// Use browser history when possible, with a catalogue fallback for directly opened links.
+// Close by navigating so the URL and dialog stay in sync. Ignore repeat clicks while
+// navigation is pending, and send direct links back to the catalogue.
 function closeModal() {
   if (closing) return
   closing = true
   const previousRoute = router.options.history.state.back
 
-  // Direct links have no catalogue entry to return to in this tab.
+  // Go back only if the previous entry is the catalogue or one of its anchors.
+  // Otherwise replace this route rather than returning to an unrelated page.
   if (typeof previousRoute === 'string' && /^\/(?:#.*)?$/.test(previousRoute)) {
     router.back()
   } else {
@@ -29,6 +31,8 @@ function handleBackdropClick(event: MouseEvent) {
   if (event.target === dialog.value) closeModal()
 }
 
+// Save the scroll style and focused element before opening the native dialog.
+// showModal makes the background inert; body overflow prevents it scrolling underneath.
 onMounted(() => {
   opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
   previousOverflow = document.body.style.overflow
@@ -36,6 +40,8 @@ onMounted(() => {
   dialog.value?.showModal()
 })
 
+// Restore focus without another scroll jump. The trigger may have been removed,
+// so only focus it if it is still connected to the document.
 onBeforeUnmount(() => {
   dialog.value?.close()
   document.body.style.overflow = previousOverflow
@@ -43,7 +49,8 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<!-- The native dialog provides focus containment while the route supplies the URL. -->
+<!-- Escape navigates through closeModal instead of only hiding the dialog, keeping
+     the route consistent. The detail key resets its state when a different show opens. -->
 <template>
   <dialog
     ref="dialog"
@@ -144,6 +151,8 @@ onBeforeUnmount(() => {
   transition: width 180ms ease, background 180ms ease;
   line-height: 1;
 }
+/* Fix the arrow independently of the button width, so expansion reveals the label
+   without moving the arrow. Only desktop widths enable the expanding button. */
 .close-button svg { position: absolute; left: 10px; top: 10px; }
 .close-button span { position: absolute; left: 42px; top: 0; line-height: 42px; opacity: 0; transition: opacity 180ms ease; }
 @media (min-width: 701px) {

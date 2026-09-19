@@ -7,6 +7,8 @@ const registering = ref(false)
 const username = ref('')
 const password = ref('')
 const confirmation = ref('')
+// Only account records persist in storage. This active username lives in component
+// state, so refreshing starts logged out even when the account still exists.
 const signedIn = ref('')
 const busy = ref(false)
 const error = ref('')
@@ -57,7 +59,8 @@ function switchMode() {
   password.value = ''
   confirmation.value = ''
 }
-// Validate confirmation before deriving a password hash or updating the active session.
+// Check confirmation for signup, then call the matching helper and use its returned
+// username as the session. Keep errors in the form so the user can correct and retry.
 async function submit() {
   error.value = ''
   if (registering.value && password.value !== confirmation.value) {
@@ -67,6 +70,7 @@ async function submit() {
   busy.value = true
   try {
     signedIn.value = await (registering.value ? createDemoAccount : signInDemoAccount)(username.value, password.value)
+    // close refuses to run while busy, so release that guard before closing on success.
     busy.value = false
     close()
   } catch (cause) {
@@ -99,6 +103,8 @@ onBeforeUnmount(() => {
     <p class="eyebrow">YOUR VivTV</p>
     <h2 id="account-title">{{ registering ? 'Sign up' : 'Log in' }}</h2>
     <form @submit.prevent="submit">
+      <!-- Disable the form during hashing to prevent edits or duplicate submissions.
+           HTML constraints check basic input; account helpers validate the stored operation too. -->
       <fieldset :disabled="busy">
         <label>Username<input v-model="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_-]+" autocomplete="username" autocapitalize="none" /></label>
         <label>Password<input v-model="password" type="password" required minlength="8" maxlength="128" :autocomplete="registering ? 'new-password' : 'current-password'" /></label>

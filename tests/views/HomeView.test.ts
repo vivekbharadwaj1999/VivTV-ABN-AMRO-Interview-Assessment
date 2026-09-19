@@ -1,6 +1,6 @@
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import HomeView from './HomeView.vue'
+import HomeView from '../../src/views/HomeView.vue'
 
 afterEach(() => vi.unstubAllGlobals())
 
