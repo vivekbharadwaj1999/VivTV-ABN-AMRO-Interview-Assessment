@@ -11,7 +11,7 @@ export async function searchShows(query: string, signal?: AbortSignal): Promise<
 }
 
 // Load one index page and let the dashboard group it locally by genre. This bounds the
-// initial request; search can still find shows outside this collection.
+// initial request. Search can still find shows outside this collection.
 export async function getShows(): Promise<Show[]> {
   const response = await fetch('https://api.tvmaze.com/shows?page=0')
 

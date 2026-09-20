@@ -8,7 +8,7 @@ defineProps<{ genre: string; shows: Show[]; ranked?: boolean; hideCount?: boolea
 const row = ref<HTMLUListElement | null>(null)
 
 // Move 85% of the visible row in the chosen direction, leaving some overlap for context.
-// The browser clamps scrolling at either end; reduced motion skips the smooth animation.
+// The browser clamps scrolling at either end. Reduced motion skips the smooth animation.
 function scrollRow(direction: number) {
   if (!row.value) return
 

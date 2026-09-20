@@ -17,7 +17,7 @@ export function genrePreferences(history: Show[]) {
 }
 
 // Match candidates against all recent genre counts, excluding already opened shows.
-// Stronger genre matches come first; rating and name make equal matches predictable.
+// Stronger genre matches come first. Rating and name make equal matches predictable.
 export function recommendShows(catalogue: Show[], history: Show[]) {
   const preferences = genrePreferences(history)
   const opened = new Set(history.map(show => show.id))

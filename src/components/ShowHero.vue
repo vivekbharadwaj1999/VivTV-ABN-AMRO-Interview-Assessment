@@ -17,7 +17,7 @@ onMounted(async () => {
       ?? images.find(image => image.type === 'banner')
     backdrop.value = image?.resolutions.original.url ?? ''
   } catch {
-    // Artwork is optional; the show poster remains the fallback.
+    // Artwork is optional. The show poster remains the fallback.
   }
 })
 onUnmounted(() => controller.abort())

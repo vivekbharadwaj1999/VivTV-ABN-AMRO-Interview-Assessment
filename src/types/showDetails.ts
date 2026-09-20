@@ -1,4 +1,4 @@
-// Only the API fields consumed by the UI are modelled here; nullable data stays explicit.
+// Only the API fields consumed by the UI are modelled here. Nullable data stays explicit.
 export interface Episode {
   id: number
   name: string

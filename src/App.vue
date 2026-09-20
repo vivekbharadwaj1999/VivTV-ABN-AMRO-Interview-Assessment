@@ -24,7 +24,7 @@ function backToTop() {
   window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
   header.value?.querySelector<HTMLAnchorElement>('.brand')?.focus({ preventScroll: true })
 }
-// Typing changes searchQuery; submit copies it into searchTerm for the results.
+// Typing changes searchQuery. Submit copies it into searchTerm for the results.
 // Keeping them separate avoids an API request on every keystroke.
 const searchQuery = ref('')
 const searchTerm = ref('')
@@ -59,7 +59,7 @@ async function toggleSearch() {
   }
 }
 // Commit the query and blur to dismiss the phone keyboard. Wait for the results section
-// to render before scrolling to it; the API request can still be loading at that point.
+// to render before scrolling to it. The API request can still be loading at that point.
 async function submitSearch() {
   searchTerm.value = searchQuery.value.trim()
   searchInput.value?.blur()

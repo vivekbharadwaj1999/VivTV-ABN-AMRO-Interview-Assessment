@@ -26,13 +26,13 @@ function closeModal() {
   }
 }
 
-// Only the empty overlay closes the modal; clicks inside the card are ignored.
+// Only the empty overlay closes the modal. Clicks inside the card are ignored.
 function handleBackdropClick(event: MouseEvent) {
   if (event.target === dialog.value) closeModal()
 }
 
 // Save the scroll style and focused element before opening the native dialog.
-// showModal makes the background inert; body overflow prevents it scrolling underneath.
+// showModal makes the background inert. Body overflow prevents it scrolling underneath.
 onMounted(() => {
   opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
   previousOverflow = document.body.style.overflow

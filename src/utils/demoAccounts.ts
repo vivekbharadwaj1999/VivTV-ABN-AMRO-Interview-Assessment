@@ -30,7 +30,7 @@ function toHex(bytes: Uint8Array) {
 }
 
 // Encode the password as key material, decode the saved salt and derive a 256-bit hash.
-// Repeated PBKDF2 work slows guessing; the random salt makes identical passwords hash differently.
+// Repeated PBKDF2 work slows guessing. The random salt makes identical passwords hash differently.
 async function hashPassword(password: string, salt: string) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits'])
   const bytes = Uint8Array.from(salt.match(/../g)!, part => parseInt(part, 16))
@@ -54,7 +54,7 @@ export async function createDemoAccount(username: string, password: string) {
 }
 
 // Find the normalised username and hash the supplied password with that account's salt.
-// Matching hashes return the username; missing accounts and wrong passwords share one error.
+// Matching hashes return the username. Missing accounts and wrong passwords share one error.
 export async function signInDemoAccount(username: string, password: string) {
   requirePasswordCrypto()
   const account = readAccounts().find(a => a.username === username.trim().toLowerCase())

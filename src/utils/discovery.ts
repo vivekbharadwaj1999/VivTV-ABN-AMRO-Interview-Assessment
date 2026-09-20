@@ -14,7 +14,7 @@ export function addRecent(shows: Show[], show: Show) {
 }
 
 // Exclude the previous banner when alternatives exist, then choose a random index.
-// A single available show may repeat; an empty collection returns null.
+// A single available show may repeat. An empty collection returns null.
 export function pickFeatured(shows: Show[], previousId: number | null) {
   const alternatives = shows.filter(show => show.id !== previousId)
   const choices = alternatives.length ? alternatives : shows

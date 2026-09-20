@@ -16,13 +16,13 @@ function readRecent(): Show[] {
 }
 
 // This ref is created once at module scope, so the detail view and homepage share it.
-// Storage restores it on refresh; it is not separated by the locally signed-in account.
+// Storage restores it on refresh. It is not separated by the locally signed-in account.
 export const recentShows = ref<Show[]>(readRecent())
 // Update reactive history first so the homepage changes immediately, then persist it.
 // A failed write leaves history usable in memory for the current page session.
 export function rememberShow(show: Show) {
   recentShows.value = addRecent(recentShows.value, show)
   try { localStorage.setItem(key, JSON.stringify(recentShows.value)) } catch {
-    // Browsing still works if storage is unavailable; history remains in memory.
+    // Browsing still works if storage is unavailable. History remains in memory.
   }
 }

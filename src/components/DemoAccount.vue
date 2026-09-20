@@ -25,7 +25,7 @@ function closeMenu() {
   accountMenu.value.open = false
   accountMenu.value.querySelector('summary')?.focus()
 }
-// The session is only held in memory; saved account records remain available.
+// The session is only held in memory. Saved account records remain available.
 async function logout() {
   signedIn.value = ''
   await nextTick()
@@ -104,11 +104,11 @@ onBeforeUnmount(() => {
     <h2 id="account-title">{{ registering ? 'Sign up' : 'Log in' }}</h2>
     <form @submit.prevent="submit">
       <!-- Disable the form during hashing to prevent edits or duplicate submissions.
-           HTML constraints check basic input; account helpers validate the stored operation too. -->
+           HTML constraints check basic input. Account helpers validate the stored operation too. -->
       <fieldset :disabled="busy">
-        <label>Username<input v-model="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_-]+" autocomplete="username" autocapitalize="none" /></label>
-        <label>Password<input v-model="password" type="password" required minlength="8" maxlength="128" :autocomplete="registering ? 'new-password' : 'current-password'" /></label>
-        <label v-if="registering">Confirm password<input v-model="confirmation" type="password" required minlength="8" maxlength="128" autocomplete="new-password" /></label>
+        <label for="account-username">Username<input id="account-username" name="username" v-model="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_-]+" autocomplete="username" autocapitalize="none" /></label>
+        <label for="account-password">Password<input id="account-password" name="password" v-model="password" type="password" required minlength="8" maxlength="128" :autocomplete="registering ? 'new-password' : 'current-password'" /></label>
+        <label v-if="registering" for="account-password-confirmation">Confirm password<input id="account-password-confirmation" name="password-confirmation" v-model="confirmation" type="password" required minlength="8" maxlength="128" autocomplete="new-password" /></label>
         <p v-if="error" role="alert">{{ error }}</p>
         <button class="submit-account" type="submit">{{ busy ? 'Please wait…' : registering ? 'Sign up' : 'Log in' }}</button>
         <button class="switch-mode" type="button" @click="switchMode">{{ registering ? 'Already have an account? Log in' : 'New here? Sign up' }}</button>
@@ -118,7 +118,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Account forms share the dark theme; the profile dropdown stays anchored to its avatar. */
+/* Account forms share the dark theme. The profile dropdown stays anchored to its avatar. */
 .account-actions { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
 .profile-menu { position: relative; }
 .profile-avatar { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #b4a1ff, #6fd9c6); color: #18232b; font-size: 1rem; font-weight: 800; letter-spacing: 0.03em; cursor: pointer; list-style: none; box-shadow: inset 0 0 0 1px #ffffff30; }
